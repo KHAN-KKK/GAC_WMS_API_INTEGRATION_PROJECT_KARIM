@@ -1,0 +1,9 @@
+<Products>
+  <Product>
+    <ProductCode>P0112</ProductCode>
+    <Title>Antique Chair</Title>
+    <Description>Comfortable wooden chair</Description>
+    <Dimensions>40x40x90</Dimensions>
+<Quantity>0</Quantity>
+  </Product>
+</Products>

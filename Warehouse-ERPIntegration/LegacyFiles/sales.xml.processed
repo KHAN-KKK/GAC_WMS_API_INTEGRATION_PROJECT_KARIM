@@ -1,0 +1,16 @@
+<Products>
+  <Product>
+    <ProductCode>P1001</ProductCode>
+    <Title>Blue Chair</Title>
+    <Description>Comfortable wooden chair</Description>
+    <Dimensions>40x40x90</Dimensions>
+<Quantity>100</Quantity>
+  </Product>
+  <Product>
+    <ProductCode>P1002</ProductCode>
+    <Title>Office Table</Title>
+    <Description>Large wooden desk</Description>
+    <Dimensions>120x60x75</Dimensions>
+<Quantity>100</Quantity>
+  </Product>
+</Products>

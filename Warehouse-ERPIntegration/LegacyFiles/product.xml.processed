@@ -1,0 +1,9 @@
+<Products>
+  <Product>
+    <ProductCode>P1002</ProductCode>
+    <Title>Red Chair</Title>
+    <Description>Comfortable wooden chair</Description>
+    <Dimensions>40x40x90</Dimensions>
+<Quantity>100</Quantity>
+  </Product>
+</Products>

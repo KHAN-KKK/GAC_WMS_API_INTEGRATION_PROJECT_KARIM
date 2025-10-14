@@ -1,0 +1,6 @@
+@Warehouse_ERPIntegration_HostAddress = http://localhost:5150
+
+GET {{Warehouse_ERPIntegration_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
