@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using Warehouse_ERPIntegration.API.Data;
 using Warehouse_ERPIntegration.API.Models.Entity;
 
@@ -7,19 +8,22 @@ namespace Warehouse_ERPIntegration.API.Controllers
 {
     public class ErrorController(IntegrationDbContext db) : BaseController
     {
-        [HttpGet("NotFound")]
-        public ActionResult<Product> GetNotFound()
+        [HttpGet("auth")]
+        public IActionResult GetAuth()
         {
-            var data = db.products.Find(-1);
-            if (data == null) return NotFound();
-            return data;
+            return Unauthorized();
+
+        }
+        [HttpGet("NotFound")]
+        public IActionResult GetNotFound()
+        {
+            return NotFound();
         }
 
         [HttpGet("InternalError")]
-        public ActionResult<Product> GetInternalError()
+        public IActionResult GetInternalError()
         {
-            var data = db.products.Find(-1) ?? throw new Exception("A bad thing happened");
-            return data;
+            throw new Exception("something bad happened");
         }
 
         [HttpGet("BadRequest")]

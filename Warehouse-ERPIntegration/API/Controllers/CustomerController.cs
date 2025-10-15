@@ -1,28 +1,41 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using Warehouse_ERPIntegration.API.Errors;
 using Warehouse_ERPIntegration.API.Models.DTO;
 using Warehouse_ERPIntegration.API.Services.Interface;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Warehouse_ERPIntegration.API.Controllers
 {
-    public class CustomersController : BaseController
+    public class CustomersController(ICustomerService _service) : BaseController
     {
-        private readonly ICustomerService _service;
-
-        public CustomersController(ICustomerService service)
-        {
-            _service = service;
-        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CustomerDto dto)
         {
+           
             var result = await _service.ValidateAndCreateAsync(dto);
-            if (!result.IsSuccess)
-                return BadRequest(result.Errors);
+            ResponseStatus status = new ResponseStatus();
+            if(result.Errors.Count() > 0 || !result.IsSuccess)
+            {
+                status.Status = "Bad Request";
+                status.StatusCode = result.statusCode.ToString();
+                status.StatusMessage = result.Errors.Count() > 0 ? result.Errors.ToList() : result.Errors.Append("Product details not saved").ToList();
+                status.data = new object();
+                status.Count = 0;
+                return BadRequest(status);
+            }
 
-            return CreatedAtAction(nameof(GetByExternalId),
-                new { externalId = result.Result.ExternalCustomerId },
-                result.Result);
+            status.Status = "Success";
+            status.StatusCode = result.statusCode.ToString();
+            status.StatusMessage = result.Errors.Append("Customer created Successfully").ToList();
+            status.data = result.Result ;
+            status.Count = 1;
+
+            return Ok(status);
+            //return CreatedAtAction(nameof(GetByExternalId),
+                //new { externalId = result.Result.ExternalCustomerId },
+                //result.Result);
         }
 
         [HttpGet("{externalId}")]

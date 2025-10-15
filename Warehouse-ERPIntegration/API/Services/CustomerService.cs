@@ -18,7 +18,7 @@ namespace Warehouse_ERPIntegration.API.Services
             _mapper = mapper;
         }
 
-        public async Task<(bool IsSuccess, CustomerDto Result, IEnumerable<string> Errors)> ValidateAndCreateAsync(CustomerDto dto)
+        public async Task<(bool IsSuccess, int statusCode, CustomerDto Result, IEnumerable<string> Errors)> ValidateAndCreateAsync(CustomerDto dto)
         {
             var errors = new List<string>();
 
@@ -30,19 +30,22 @@ namespace Warehouse_ERPIntegration.API.Services
                 errors.Add("Address is required.");
 
             if (errors.Count > 0)
-                return (false, null, errors);
+                return (false, 400, null, errors);
 
             var existing = await _db.Customers
                 .FirstOrDefaultAsync(c => c.ExternalCustomerId == dto.ExternalCustomerId);
 
             if (existing != null)
-                return (false, _mapper.Map<CustomerDto>(existing), Array.Empty<string>());
+            {
+                errors.Add($"Customer with Id {dto.ExternalCustomerId} already exists");
+                return (false, 401, _mapper.Map<CustomerDto>(existing), errors);
+            }
 
             var customer = _mapper.Map<Customer>(dto);
             _db.Customers.Add(customer);
             await _db.SaveChangesAsync();
 
-            return (true, _mapper.Map<CustomerDto>(customer), Array.Empty<string>());
+            return (true, 200 , _mapper.Map<CustomerDto>(customer), Array.Empty<string>());
         }
 
         public async Task<CustomerDto> GetByExternalIdAsync(string externalId)

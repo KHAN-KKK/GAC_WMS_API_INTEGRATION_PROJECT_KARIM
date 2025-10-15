@@ -111,7 +111,8 @@ namespace Warehouse_ERPIntegration.API.Services
                 .Include(s => s.Customer)
                 .FirstOrDefaultAsync(s => s.ExternalOrderId == externalId);
 
-            return _mapper.Map<SalesOrderDto>(so);
+            var result = _mapper.Map<SalesOrderDto>(so);
+            return result;
         }
     }
 }

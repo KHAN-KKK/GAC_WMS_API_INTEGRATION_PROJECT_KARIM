@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Net;
 using System.Text.Json;
+using Warehouse_ERPIntegration.API.Errors;
 
 namespace Warehouse_ERPIntegration.API.Middleware
 {
-    public class ExceptionHandlingMiddleware
+    public class ExceptionHandlingMiddleware(RequestDelegate _next, IHostEnvironment _env, ILogger<ExceptionHandlingMiddleware> _logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-        {
-            _next = next;
-            _logger = logger;
-        }
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -23,8 +16,20 @@ namespace Warehouse_ERPIntegration.API.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception occurred while processing {Path}", context.Request.Path);
-                await HandleExceptionAsync(context, ex);
+                _logger.LogError(ex, "{message}", ex.Message);
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                var response = _env.IsDevelopment()
+                    ? new ApiException(context.Response.StatusCode, ex.Message, ex.StackTrace)
+                    : new ApiException(context.Response.StatusCode, ex.Message, "Internal Server Error");
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                var json = JsonSerializer.Serialize(response, options);
+                await context.Response.WriteAsync(json);
             }
         }
 

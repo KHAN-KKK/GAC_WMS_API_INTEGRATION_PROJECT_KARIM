@@ -26,7 +26,7 @@ namespace Warehouse_ERPIntegration.API.Services
             return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<(bool IsSuccess, ProductDto Result, IEnumerable<string> Errors)> ValidateAndCreateAsync(ProductDto dto)
+        public async Task<(bool IsSuccess,string statusCode, ProductDto Result, IEnumerable<string> Errors)> ValidateAndCreateAsync(ProductDto dto)
         {
             var errors = new List<string>();
 
@@ -38,19 +38,22 @@ namespace Warehouse_ERPIntegration.API.Services
                 errors.Add("Quantity is required");
 
             if (errors.Count > 0)
-                return (false, null, errors);
+                return (false, "404", null, errors);
 
             var existing = await _db.products
                 .FirstOrDefaultAsync(p => p.ExternalProductCode == dto.ExternalProductCode);
 
             if (existing != null)
-                return (false, _mapper.Map<ProductDto>(existing), Array.Empty<string>());
+            {
+                errors.Add($"Product with Id {dto.ExternalProductCode} already Exists");
+                return (false, "401", _mapper.Map<ProductDto>(existing), Array.Empty<string>());
+            }
 
             var product = _mapper.Map<Product>(dto);
             _db.products.Add(product);
             await _db.SaveChangesAsync();
 
-            return (true, _mapper.Map<ProductDto>(product), Array.Empty<string>());
+            return (true, "201", _mapper.Map<ProductDto>(product), Array.Empty<string>());
         }
 
     }

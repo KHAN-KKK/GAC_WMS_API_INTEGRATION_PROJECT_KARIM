@@ -1,43 +1,63 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Warehouse_ERPIntegration.API.Errors;
 using Warehouse_ERPIntegration.API.Models.DTO;
 using Warehouse_ERPIntegration.API.Services;
 using Warehouse_ERPIntegration.API.Services.Interface;
 
 namespace Warehouse_ERPIntegration.API.Controllers
 {
-    public class SalesOrdersController : BaseController
+    public class SalesOrdersController(ISalesOrderService _service, IWmsIntegrationService _wmsService) : BaseController
     {
-        private readonly ISalesOrderService _service;
-        private readonly IWmsIntegrationService _wmsService;
-
-        public SalesOrdersController(ISalesOrderService service, IWmsIntegrationService wmsService)
-        {
-            _service = service;
-            _wmsService = wmsService;
-        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SalesOrderDto dto)
         {
             var result = await _service.ValidateAndCreateAsync(dto);
 
-            if (result.Errors.Any() || !result.IsSuccess)
-                return BadRequest(result.Errors);
+            ResponseStatus status = new ResponseStatus();
+            if (result.Errors.Count() > 0 || !result.IsSuccess)
+            {
+                status.Status = "Bad Request";
+                status.StatusCode = "400";
+                status.StatusMessage = result.Errors.Count() > 0 ? result.Errors.ToList() : result.Errors.Append("Product details not saved").ToList();
+                status.data = new object();
+                status.Count = 0;
+                return BadRequest(status);
+            }
 
-            return CreatedAtAction(nameof(GetByExternalId),
-                new { externalId = result.Result.ExternalOrderId },
-                result.Result);
+            status.Status = "Success";
+            status.StatusCode = "201";
+            status.StatusMessage = result.Errors.Append("Sales Order created Successfully").ToList();
+            status.data = new object();
+            status.Count = 1;
+
+            return Ok(status);
         }
 
         [HttpGet("{externalId}")]
         public async Task<IActionResult> GetByExternalId(string externalId)
         {
             var order = await _service.GetByExternalIdAsync(externalId);
+            ResponseStatus status = new ResponseStatus();
             if (order == null)
-                return NotFound();
+            {
+                status.Status = "Not Found";
+                status.StatusCode = "404";
+                status.StatusMessage?.Append("Product details not found").ToList();
+                status.data = new object();
+                status.Count = 0;
+                return BadRequest(status);
+            }
 
-            return Ok(order);
+            status.Status = "Success";
+            status.StatusCode = "201";
+            status.StatusMessage?.Append("Sales Order received Successfully").ToList();
+            status.data = order;
+            status.Count = 1;
+
+            return Ok(status);
         }
 
         //should call either from outside like micro services
