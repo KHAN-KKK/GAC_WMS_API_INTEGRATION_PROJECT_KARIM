@@ -8,3 +8,5 @@
 /.vs/slnx.sqlite
 /.vs
 /.vs/VSWorkspaceState.json
+/Warehouse-ERPIntegration/bin/Debug/net9.0
+/Warehouse-ERPIntegration/obj
